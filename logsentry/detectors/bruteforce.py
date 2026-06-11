@@ -14,6 +14,7 @@ from .. import ids
 from ..models import Alert, LoginEvent, Outcome, Severity
 from ..protocols import AnalysisContext
 from ..scoring import score_r1
+from ._common import is_allowlisted
 
 _FAILURE_OUTCOMES = frozenset({Outcome.FAILURE, Outcome.INVALID_USER})
 
@@ -36,14 +37,14 @@ class BruteForceDetector:
         self, events: list[LoginEvent], ctx: AnalysisContext
     ) -> list[Alert]:
         cfg = ctx.config.r1
-        allow_ips = set(ctx.config.allowlists.ips)
+        allowlists = ctx.config.allowlists
 
         # Group failures by key, preserving determinism via explicit sort later.
         groups: dict[tuple[str, ...], list[LoginEvent]] = {}
         for ev in events:
             if ev.outcome not in _FAILURE_OUTCOMES:
                 continue
-            if ev.source_ip is None or ev.source_ip in allow_ips:
+            if ev.source_ip is None or is_allowlisted(ev, allowlists):
                 continue
             key = self._key(ev, cfg.per_user)
             groups.setdefault(key, []).append(ev)

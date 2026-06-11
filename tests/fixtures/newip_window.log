@@ -1,0 +1,4 @@
+2026-01-10T09:00:00+00:00 host1 sshd[7101]: Accepted password for alice from 45.32.10.1 port 50101 ssh2
+2026-01-10T09:30:00+00:00 host1 sshd[7102]: Accepted password for alice from 203.0.113.200 port 50102 ssh2
+2026-01-10T09:45:00+00:00 host1 sshd[7103]: Accepted password for alice from 203.0.113.200 port 50103 ssh2
+2026-01-10T10:00:00+00:00 host1 sshd[7104]: Accepted password for newbie from 198.51.100.200 port 50104 ssh2

@@ -1,0 +1,4 @@
+2026-01-13T10:00:00-05:00 host1 sshd[6001]: Accepted password for alice from 45.32.10.1 port 50001 ssh2
+2026-01-13T20:00:00-05:00 host1 sshd[6002]: Accepted password for bob from 45.32.10.2 port 50002 ssh2
+2026-01-10T12:00:00-05:00 host1 sshd[6003]: Accepted password for carol from 45.32.10.3 port 50003 ssh2
+2026-01-13T21:00:00-05:00 host1 sshd[6004]: Failed password for dave from 45.32.10.4 port 50004 ssh2

@@ -1,0 +1,25 @@
+# Allowlist suppression test config.
+[allowlists]
+ips = ["45.32.10.1"]
+users = ["svc-backup"]
+
+[r3]
+max_kmh = 900
+min_distance_km = 500
+
+[r4]
+timezone = "America/New_York"
+business_days = [0, 1, 2, 3, 4]
+business_start = "08:00"
+business_end = "18:00"
+only_success = true
+
+[r5]
+only_success = true
+
+[geo]
+resolver = "static"
+static_path = "tests/fixtures/geo_static.csv"
+
+[ingest]
+log_timezone = "UTC"

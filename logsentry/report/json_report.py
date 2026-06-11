@@ -7,7 +7,16 @@ from collections.abc import Sequence
 from datetime import UTC, datetime
 
 from .. import __version__
-from ..models import Alert, LoginEvent, Severity
+from ..models import (
+    Alert,
+    AlertDetail,
+    GeoDetail,
+    GeoPoint,
+    LoginEvent,
+    NewSourceIPDetail,
+    OffHoursDetail,
+    Severity,
+)
 from ..parsers.base import ParseResult
 
 SCHEMA_VERSION = "1"
@@ -29,6 +38,13 @@ def entities_object(alert: Alert) -> dict[str, object]:
     if alert.rule_id == "R2":
         username, source_ip = alert.entities
         return {"username": username, "source_ip": source_ip}
+    if alert.rule_id == "R3":
+        username, ip_from, ip_to = alert.entities
+        return {"username": username, "source_ip_from": ip_from,
+                "source_ip_to": ip_to}
+    if alert.rule_id in ("R4", "R5"):
+        username, source_ip = alert.entities
+        return {"username": username, "source_ip": source_ip}
     return {"values": list(alert.entities)}
 
 
@@ -40,8 +56,46 @@ def severity_counts(alerts: Sequence[Alert]) -> dict[str, int]:
     return counts
 
 
-def _alert_obj(alert: Alert) -> dict[str, object]:
+def _geo_point_obj(point: GeoPoint) -> dict[str, object]:
     return {
+        "ip": point.ip,
+        "lat": point.lat,
+        "lon": point.lon,
+        "country": point.country,
+        "city": point.city,
+    }
+
+
+def _details_obj(detail: AlertDetail) -> dict[str, object]:
+    """Serialize a rule-specific detail, type-dispatched (sorted keys upstream).
+
+    R3 ``GeoDetail``: ``distance_km`` -> 1 dp, speeds int. R4 ``OffHoursDetail``
+    and R5 ``NewSourceIPDetail`` echo their fields.
+    """
+    if isinstance(detail, GeoDetail):
+        return {
+            "src": _geo_point_obj(detail.src),
+            "dst": _geo_point_obj(detail.dst),
+            "distance_km": round(detail.distance_km, 1),
+            "delta_seconds": int(detail.delta_seconds),
+            "implied_kmh": int(detail.implied_kmh),
+        }
+    if isinstance(detail, OffHoursDetail):
+        return {
+            "local_time": detail.local_time,
+            "weekday": detail.weekday,
+            "business_window": detail.business_window,
+            "non_business_day": detail.non_business_day,
+        }
+    assert isinstance(detail, NewSourceIPDetail)
+    return {
+        "new_ip": detail.new_ip,
+        "known_ip_count": int(detail.known_ip_count),
+    }
+
+
+def _alert_obj(alert: Alert) -> dict[str, object]:
+    obj: dict[str, object] = {
         "alert_id": alert.alert_id,
         "rule_id": alert.rule_id,
         "title": alert.title,
@@ -53,6 +107,10 @@ def _alert_obj(alert: Alert) -> dict[str, object]:
         "description": alert.description,
         "dedup_key": alert.dedup_key,
     }
+    # Additive: only alerts carrying details (R3) emit the key. R1/R2 unchanged.
+    if alert.details is not None:
+        obj["details"] = _details_obj(alert.details)
+    return obj
 
 
 def build_report_obj(

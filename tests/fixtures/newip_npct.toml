@@ -1,0 +1,16 @@
+# R5 first_n_percent baseline mode: first N% of input seeds the known-set.
+[r5]
+baseline_source = "first_n_percent:25"
+only_success = true
+
+[output]
+fail_severity = "HIGH"
+
+[ingest]
+log_timezone = "UTC"
+
+[r4]
+timezone = "UTC"
+business_days = [0, 1, 2, 3, 4, 5, 6]
+business_start = "00:00"
+business_end = "23:59"

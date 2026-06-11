@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import tomllib
 from dataclasses import dataclass, field, fields
-from datetime import time
+from datetime import datetime, time
 from pathlib import Path
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -143,6 +143,20 @@ class Output:
 
 
 @dataclass(frozen=True)
+class Geo:
+    """Geo resolution settings.
+
+    ``resolver`` selects the backend: ``null`` (no geo), ``static`` (offline
+    CSV) or ``maxmind`` (local ``.mmdb``). Paths are required for their
+    respective backends and validated to exist.
+    """
+
+    resolver: str = "null"
+    static_path: str | None = None
+    mmdb_path: str | None = None
+
+
+@dataclass(frozen=True)
 class Config:
     """Top-level LogSentry configuration."""
 
@@ -154,6 +168,7 @@ class Config:
     allowlists: Allowlists = field(default_factory=Allowlists)
     ingest: Ingest = field(default_factory=lambda: Ingest(log_timezone="UTC"))
     output: Output = field(default_factory=Output)
+    geo: Geo = field(default_factory=Geo)
 
 
 def _coerce_section(cls: type[Any], data: dict[str, Any]) -> Any:
@@ -223,6 +238,7 @@ def _config_from_dict(data: dict[str, Any]) -> Config:
         "r5": R5NewSourceIP,
         "allowlists": Allowlists,
         "output": Output,
+        "geo": Geo,
     }
     kwargs: dict[str, Any] = {}
     for name, cls in section_types.items():
@@ -268,3 +284,55 @@ def validate_config(config: Config) -> None:
         raise ValueError(
             f"output.fail_severity must be one of {sorted(valid_sev)}"
         )
+    _validate_geo(config.geo)
+    _validate_baseline_source(config.r5.baseline_source)
+
+
+def _validate_baseline_source(source: str | None) -> None:
+    """Validate the R5 ``baseline_source`` shape (fail loud on bad input).
+
+    Accepts: unset; an existing file path; ``cutoff_ts:<ISO8601>`` (parseable);
+    or ``first_n_percent:<N>`` with ``1 <= N <= 100``.
+    """
+    if not source:
+        return
+    if source.startswith("cutoff_ts:"):
+        value = source[len("cutoff_ts:"):]
+        try:
+            datetime.fromisoformat(value)
+        except ValueError as exc:
+            raise ValueError(
+                f"r5.baseline_source cutoff_ts not ISO8601: {value!r}"
+            ) from exc
+        return
+    if source.startswith("first_n_percent:"):
+        value = source[len("first_n_percent:"):]
+        try:
+            pct = int(value)
+        except ValueError as exc:
+            raise ValueError(
+                f"r5.baseline_source first_n_percent not an int: {value!r}"
+            ) from exc
+        if not 1 <= pct <= 100:
+            raise ValueError("r5.baseline_source first_n_percent must be 1..100")
+        return
+    # Otherwise a bare file path: must exist.
+    if not Path(source).is_file():
+        raise ValueError(f"r5.baseline_source path not found: {source}")
+
+
+def _validate_geo(geo: Geo) -> None:
+    """Validate the geo backend selection and that required files exist."""
+    valid = {"null", "static", "maxmind"}
+    if geo.resolver not in valid:
+        raise ValueError(f"geo.resolver must be one of {sorted(valid)}")
+    if geo.resolver == "static":
+        if not geo.static_path:
+            raise ValueError("geo.static_path is required when resolver='static'")
+        if not Path(geo.static_path).is_file():
+            raise ValueError(f"geo.static_path not found: {geo.static_path}")
+    if geo.resolver == "maxmind":
+        if not geo.mmdb_path:
+            raise ValueError("geo.mmdb_path is required when resolver='maxmind'")
+        if not Path(geo.mmdb_path).is_file():
+            raise ValueError(f"geo.mmdb_path not found: {geo.mmdb_path}")

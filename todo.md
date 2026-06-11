@@ -1,18 +1,20 @@
-# Phase 2 — Engine + R1 + R2 (todo)
+# Phase 4 — R4 Off-Hours + R5 New-Source-IP (todo)
 
-- [x] Task 1 — engine.py: build_stream (stable sort), run_detectors, registry
-- [x] Task 2 — detectors/bruteforce.py (R1), detectors/failsucc.py (R2)
-- [x] Task 3 — scoring.py: severity bases, R1/R2 formulas, rank key
-- [x] Task 4 — report/json_report.py, report/text_report.py
-- [x] Task 5 — cli.py + thin __main__.py; [output].fail_severity
-- [x] Task 6 — fixtures + tests (engine, scoring, R1, R2, snapshot, exit codes)
+- [x] Task 1 — models: OffHoursDetail, NewSourceIPDetail, AlertDetail union, Alert.details widened
+- [x] Task 2 — detectors/offhours.py (R4, MEDIUM)
+- [x] Task 3 — detectors/newsourceip.py (R5, LOW) + empty-baseline silence
+- [x] Task 4 — engine.derive_baseline (cutoff/percent) + CLI --baseline + file mode
+- [x] Task 5 — uniform allowlists (shared _common.is_allowlisted) across R1–R5
+- [x] Task 6 — scoring.score_r4 / score_r5
+- [x] Task 7 — json/text serialization; config baseline_source validation; example toml
+- [x] Task 8 — fixtures + tests (offhours, newsourceip, baseline, allowlist, snapshot)
 
 ## Verification
 
-- [x] ruff / mypy --strict / pytest green (59 tests)
-- [x] both CLI runs (json exit=1 / text exit=1) as expected
+- [x] ruff / mypy --strict / pytest green (98 tests)
+- [x] import scan: geoip2/maxminddb only in geo.py; no network imports
+- [x] Phase 2 AND Phase 3 goldens byte-identical
 
-## Out of scope (Phase 2)
+## Out of scope (Phase 4)
 
-- No R3/geo, no R4, no baseline wiring, no correlation. No network.
-- No new runtime deps. No Phase 0/1 public signature changes — extend only.
+- No correlation. No schema bump (additive only). No network. No new deps.

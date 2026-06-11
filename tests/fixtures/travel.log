@@ -1,0 +1,6 @@
+2026-01-10T13:00:00+00:00 host1 sshd[5001]: Accepted password for alice from 45.32.10.1 port 50001 ssh2
+2026-01-10T13:30:00+00:00 host1 sshd[5002]: Accepted password for alice from 51.15.20.2 port 50002 ssh2
+2026-01-11T09:30:00+00:00 host1 sshd[5003]: Accepted password for alice from 13.52.30.3 port 50003 ssh2
+2026-01-11T09:45:00+00:00 host1 sshd[5004]: Accepted password for alice from 13.52.30.4 port 50004 ssh2
+2026-01-10T14:00:00+00:00 host1 sshd[5101]: Accepted password for bob from 81.2.69.5 port 50101 ssh2
+2026-01-10T14:05:00+00:00 host1 sshd[5102]: Accepted password for bob from 10.0.0.5 port 50102 ssh2

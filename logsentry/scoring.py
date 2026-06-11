@@ -46,6 +46,26 @@ def score_r2(preceding_failures: int, min_preceding_failures: int) -> int:
     return _clamp(90 + min(10, 2 * (preceding_failures - m)), 0, 100)
 
 
+def score_r3(implied_kmh: int, max_kmh: int) -> int:
+    """R3 impossible-travel score.
+
+    ``score = clamp(70 + min(30, 10*((implied_kmh // max_kmh) - 1)), 0, 100)``.
+    ``implied_kmh`` must already be floored to an int.
+    """
+    ratio = (implied_kmh // max_kmh) - 1 if max_kmh > 0 else 0
+    return _clamp(70 + min(30, 10 * ratio), 0, 100)
+
+
+def score_r4(non_business_day: bool) -> int:
+    """R4 off-hours score: 60 on a non-business day, else 50 (weekday evening)."""
+    return _clamp(50 + (10 if non_business_day else 0), 0, 100)
+
+
+def score_r5() -> int:
+    """R5 new-source-IP score: flat 30."""
+    return 30
+
+
 def rank_key(alert: Alert) -> tuple[float, int, str, str, str]:
     """Ascending sort key: ``(-score, -severity_int, start, rule_id, dedup_key)``.
 

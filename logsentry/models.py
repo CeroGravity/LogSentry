@@ -81,12 +81,62 @@ class GeoLocation:
 
 
 @dataclass(frozen=True)
+class GeoPoint:
+    """A single geo-located endpoint (one side of a travel pair)."""
+
+    ip: str
+    lat: float | None
+    lon: float | None
+    country: str | None
+    city: str | None
+
+
+@dataclass(frozen=True)
+class GeoDetail:
+    """Structured detail for an impossible-travel (R3) alert.
+
+    ``distance_km`` is great-circle km; ``delta_seconds`` is the elapsed time
+    between the two events; ``implied_kmh`` is the implied travel speed.
+    """
+
+    src: GeoPoint
+    dst: GeoPoint
+    distance_km: float
+    delta_seconds: int
+    implied_kmh: int
+
+
+@dataclass(frozen=True)
+class OffHoursDetail:
+    """Structured detail for an off-hours-access (R4) alert."""
+
+    local_time: str        # ISO local time in the configured timezone
+    weekday: str           # e.g. "Saturday"
+    business_window: str   # e.g. "Mon-Fri 08:00-18:00 America/New_York"
+    non_business_day: bool
+
+
+@dataclass(frozen=True)
+class NewSourceIPDetail:
+    """Structured detail for a new-source-IP (R5) alert."""
+
+    new_ip: str
+    known_ip_count: int    # size of the user's baseline known-set
+
+
+# Rule-specific structured detail attached to an alert.
+AlertDetail = GeoDetail | OffHoursDetail | NewSourceIPDetail
+
+
+@dataclass(frozen=True)
 class Alert:
     """A ranked anomaly finding produced by a detector.
 
     ``dedup_key`` collapses semantically duplicate alerts; ``alert_id`` is a
     deterministic identity derived from canonical fields (see
-    :mod:`logsentry.ids`).
+    :mod:`logsentry.ids`). ``details`` is additive and rule-specific (R3 uses
+    :class:`GeoDetail`); it defaults to ``None`` so existing rules are
+    unchanged.
     """
 
     alert_id: str
@@ -99,3 +149,4 @@ class Alert:
     evidence: tuple[str, ...]
     description: str
     dedup_key: str
+    details: AlertDetail | None = None

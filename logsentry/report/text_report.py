@@ -21,6 +21,13 @@ def _primary_entity(alert: Alert) -> str:
         return str(obj.get("source_ip", ""))
     if alert.rule_id == "R2":
         return f"{obj.get('username', '')}@{obj.get('source_ip', '')}"
+    if alert.rule_id == "R3":
+        return (
+            f"{obj.get('username', '')}: "
+            f"{obj.get('source_ip_from', '')}->{obj.get('source_ip_to', '')}"
+        )
+    if alert.rule_id in ("R4", "R5"):
+        return str(obj.get("username", ""))
     return ",".join(alert.entities)
 
 

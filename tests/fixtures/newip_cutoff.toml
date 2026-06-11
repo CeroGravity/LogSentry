@@ -1,0 +1,16 @@
+# R5 cutoff_ts baseline mode: events before the cutoff seed the known-set.
+[r5]
+baseline_source = "cutoff_ts:2026-01-10T09:15:00+00:00"
+only_success = true
+
+[output]
+fail_severity = "HIGH"
+
+[ingest]
+log_timezone = "UTC"
+
+[r4]
+timezone = "UTC"
+business_days = [0, 1, 2, 3, 4, 5, 6]
+business_start = "00:00"
+business_end = "23:59"

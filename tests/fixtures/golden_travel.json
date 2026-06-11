@@ -1,0 +1,67 @@
+{
+  "alerts": [
+    {
+      "alert_id": "1e70121f8de2ee1b",
+      "dedup_key": "R3:alice:60d1a2e39c76c318:3c4c28c7090f9d39",
+      "description": "alice seen at 45.32.10.1 then 51.15.20.2: 5570.2 km in 1800s (~11140 km/h)",
+      "details": {
+        "delta_seconds": 1800,
+        "distance_km": 5570.2,
+        "dst": {
+          "city": "London",
+          "country": "GB",
+          "ip": "51.15.20.2",
+          "lat": 51.5074,
+          "lon": -0.1278
+        },
+        "implied_kmh": 11140,
+        "src": {
+          "city": "New York",
+          "country": "US",
+          "ip": "45.32.10.1",
+          "lat": 40.7128,
+          "lon": -74.006
+        }
+      },
+      "entities": {
+        "source_ip_from": "45.32.10.1",
+        "source_ip_to": "51.15.20.2",
+        "username": "alice"
+      },
+      "evidence": [
+        "60d1a2e39c76c318",
+        "3c4c28c7090f9d39"
+      ],
+      "rule_id": "R3",
+      "score": 100,
+      "severity": "HIGH",
+      "time_range": [
+        "2026-01-10T13:00:00+00:00",
+        "2026-01-10T13:30:00+00:00"
+      ],
+      "title": "Impossible travel"
+    }
+  ],
+  "generated_at": "2026-01-10T20:00:00+00:00",
+  "inputs": [
+    {
+      "error_count": 0,
+      "event_count": 6,
+      "source_file": "tests/fixtures/travel.log"
+    }
+  ],
+  "parse_errors": [],
+  "schema_version": "1",
+  "summary": {
+    "by_severity": {
+      "CRITICAL": 0,
+      "HIGH": 1,
+      "INFO": 0,
+      "LOW": 0,
+      "MEDIUM": 0
+    },
+    "total_alerts": 1,
+    "total_events": 6
+  },
+  "tool_version": "0.0.0"
+}

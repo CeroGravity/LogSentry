@@ -1,0 +1,2 @@
+2026-01-09T10:00:00+00:00 host1 sshd[7001]: Accepted password for alice from 45.32.10.1 port 50001 ssh2
+2026-01-09T11:00:00+00:00 host1 sshd[7002]: Accepted password for alice from 45.32.10.2 port 50002 ssh2

@@ -11,18 +11,29 @@ from __future__ import annotations
 import argparse
 import sys
 from collections.abc import Sequence
+from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from . import __version__
-from .config import Config, load_config
-from .engine import build_detectors, build_stream, run_detectors
-from .geo import NullResolver
-from .models import Alert, Severity
+from .config import Config, Geo, load_config, validate_config
+from .engine import (
+    build_detectors,
+    build_stream,
+    derive_baseline,
+    run_detectors,
+)
+from .geo import (
+    CachingResolver,
+    MaxMindResolver,
+    NullResolver,
+    StaticResolver,
+)
+from .models import Alert, LoginEvent, Severity
 from .parsers import AuthLogParser, CsvParser
 from .parsers.base import ParseResult
-from .protocols import AnalysisContext
+from .protocols import AnalysisContext, GeoResolver
 from .report import render_json, render_text
 
 _CSV_SUFFIXES = {".csv", ".tsv"}
@@ -64,6 +75,14 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument(
         "--now", type=str, default=None,
         help="Injected ISO8601 clock for 'generated_at' (default: real UTC now).",
+    )
+    analyze.add_argument(
+        "--geo-db", type=str, default=None,
+        help="Local GeoLite2 .mmdb path; overrides config and implies maxmind.",
+    )
+    analyze.add_argument(
+        "--baseline", nargs="+", default=None,
+        help="Baseline file(s) for R5; overrides config baseline_source.",
     )
     return parser
 
@@ -116,12 +135,62 @@ def _exit_code(
     return 0
 
 
+def _build_resolver(geo: Geo) -> GeoResolver:
+    """Build a cache-wrapped resolver from the (validated) geo config."""
+    inner: GeoResolver
+    if geo.resolver == "static":
+        assert geo.static_path is not None  # ensured by validation
+        inner = StaticResolver(geo.static_path)
+    elif geo.resolver == "maxmind":
+        assert geo.mmdb_path is not None  # ensured by validation
+        inner = MaxMindResolver(geo.mmdb_path)
+    else:
+        inner = NullResolver()
+    return CachingResolver(inner)
+
+
+def _apply_geo_override(config: Config, geo_db: str | None) -> Config:
+    """Apply a ``--geo-db`` override: force maxmind with the given mmdb path."""
+    if geo_db is None:
+        return config
+    new_geo = replace(config.geo, resolver="maxmind", mmdb_path=geo_db)
+    new_config = replace(config, geo=new_geo)
+    validate_config(new_config)
+    return new_config
+
+
+def _build_baseline(
+    args: argparse.Namespace,
+    config: Config,
+    events: tuple[LoginEvent, ...],
+) -> tuple[LoginEvent, ...]:
+    """Resolve R5 baseline events from ``--baseline`` or config baseline_source.
+
+    ``--baseline`` (file mode) takes precedence. Otherwise a config
+    ``baseline_source`` of ``cutoff_ts:``/``first_n_percent:`` is derived from
+    the analyzed stream; a bare existing path is parsed as a file. Unset -> ().
+    """
+    if args.baseline:
+        results = _parse_inputs(args.baseline, "auto", config)
+        base_events, _errors = build_stream(results)
+        return base_events
+    source = config.r5.baseline_source
+    if source and not source.startswith(("cutoff_ts:", "first_n_percent:")):
+        # Bare path baseline -> parse the file(s).
+        if Path(source).is_file():
+            results = _parse_inputs([source], "auto", config)
+            base_events, _errors = build_stream(results)
+            return base_events
+    return derive_baseline(events, source)
+
+
 def _run_analyze(args: argparse.Namespace) -> int:
     now = _parse_now(args.now)
     if args.config is not None:
         config = load_config(args.config)
     else:
         config = Config()
+    config = _apply_geo_override(config, args.geo_db)
 
     results = _parse_inputs(args.inputs, args.input_type, config)
 
@@ -137,10 +206,11 @@ def _run_analyze(args: argparse.Namespace) -> int:
         return 2
 
     events, _errors = build_stream(results)
+    baseline_events = _build_baseline(args, config, events)
     ctx = AnalysisContext(
         config=config,
-        baseline_events=(),
-        geo_resolver=NullResolver(),
+        baseline_events=baseline_events,
+        geo_resolver=_build_resolver(config.geo),
         now=now,
         tz=ZoneInfo(config.ingest.log_timezone),
     )

@@ -30,7 +30,13 @@ only_success = true            # only alert on successful logins
 
 # R5 new_source_ip_per_user — first auth from an unseen IP for a user.
 [r5]
-# baseline_source = "baseline.csv"  # path to baseline events (default: none)
+# baseline_source establishes each user's "known IP" set. One of:
+#   - a file path (parsed like input): "baseline.log" / "baseline.csv"
+#   - "cutoff_ts:<ISO8601>"   -> input events before the cutoff are the baseline
+#   - "first_n_percent:<1..100>" -> first N% of input (by ts,line) is baseline
+# Unset -> no baseline -> R5 stays silent (no first-run flooding).
+# A user whose baseline known-set is empty is never alerted.
+# baseline_source = "baseline.log"
 only_success = true                 # only consider successful logins
 
 # Entities excluded from all alerting.
@@ -42,6 +48,13 @@ users = []   # usernames to ignore, e.g. ["backup-svc"]
 [output]
 fail_severity = "HIGH"   # CLI exits 1 if any alert is >= this severity
                          # (INFO|LOW|MEDIUM|HIGH|CRITICAL). Else exit 0.
+
+# Geo resolution (used by R3 impossible_travel). No network: 'maxmind' reads a
+# LOCAL .mmdb file only; 'static' reads a local CSV.
+[geo]
+resolver = "null"          # null | static | maxmind (default: null)
+# static_path = "geo.csv"  # required for resolver='static'; CSV ip,lat,lon,country,city
+# mmdb_path = "GeoLite2-City.mmdb"  # required for resolver='maxmind'; local .mmdb path
 
 # Ingestion settings shared by the parsers.
 [ingest]
