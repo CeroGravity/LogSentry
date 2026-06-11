@@ -1,0 +1,4 @@
+2026-01-10T13:55:36+00:00 host2 sshd[3310]: Accepted password for alice from 203.0.113.7 port 51514 ssh2
+2026-01-10T08:55:36-05:00 host2 sshd[3311]: Failed password for bob from 198.51.100.23 port 40222 ssh2
+2026-01-10T13:55:36Z host2 sshd[3312]: Failed password for invalid user oracle from 198.51.100.23 port 40224 ssh2
+2026-01-10T13:56:02.500+00:00 host2 sshd[3313]: Accepted publickey for carol from 2001:db8::1 port 50001 ssh2

@@ -1,0 +1,7 @@
+timestamp,username,source_ip,source_port,outcome,auth_method,hostname
+2026-01-10T13:55:36+0000,alice,203.0.113.7,51514,success,password,host3
+not-a-timestamp,bob,198.51.100.23,40222,failed,password,host3
+2026-01-10T13:55:42+0000,mallory,198.51.100.50,40223,bogus_outcome,password,host3
+2026-01-10T13:55:43+0000,trent,198.51.100.51,40225,success,smartcard,host3
+2026-01-10T13:55:44+0000,zoe,203.0.113.9,9001,success,publickey,host3
+short,row

@@ -1,0 +1,26 @@
+# Ingest config used by parser tests.
+[ingest]
+log_timezone = "America/New_York"
+log_year = 2026
+
+[ingest.csv]
+timestamp_format = "%Y-%m-%dT%H:%M:%S%z"
+
+[ingest.csv.columns]
+timestamp = "timestamp"
+username = "username"
+source_ip = "source_ip"
+source_port = "source_port"
+outcome = "outcome"
+auth_method = "auth_method"
+hostname = "hostname"
+
+[ingest.csv.outcome_map]
+success = "SUCCESS"
+failed = "FAILURE"
+invalid_user = "INVALID_USER"
+
+[ingest.csv.auth_method_map]
+password = "PASSWORD"
+publickey = "PUBLICKEY"
+"keyboard-interactive" = "OTHER"

@@ -1,0 +1,83 @@
+# LogSentry configuration — every key documented with its default.
+# Sections are optional; omitted sections fall back to these defaults.
+# Exception: [r4].timezone is REQUIRED (no sensible implicit default).
+
+# R1 brute_force_burst — rapid repeated failed auths from a source.
+[r1]
+window_seconds = 60    # sliding window length, seconds
+min_failures = 10      # failures within the window to trigger
+per_user = false       # count per (source, user) instead of per source
+
+# R2 failed_then_success — failures then a success for the same entity.
+[r2]
+window_seconds = 300            # window in which the success must follow
+min_preceding_failures = 5      # failures required before the success
+require_same_source_ip = true   # success must share the failures' source IP
+
+# R3 impossible_travel — same user seen too far apart too fast.
+[r3]
+max_kmh = 900             # implied speed above this is "impossible"
+min_distance_km = 500     # ignore hops shorter than this
+consider_failures = false # if true, also weigh failed auths
+
+# R4 off_hours_access — successful login outside business hours.
+[r4]
+timezone = "UTC"               # REQUIRED — IANA tz name (e.g. "America/New_York")
+business_days = [0, 1, 2, 3, 4]  # 0=Mon .. 6=Sun; default Mon–Fri
+business_start = "08:00"       # inclusive start of business hours, HH:MM
+business_end = "18:00"         # exclusive end of business hours, HH:MM
+only_success = true            # only alert on successful logins
+
+# R5 new_source_ip_per_user — first auth from an unseen IP for a user.
+[r5]
+# baseline_source = "baseline.csv"  # path to baseline events (default: none)
+only_success = true                 # only consider successful logins
+
+# Entities excluded from all alerting.
+[allowlists]
+ips = []     # source IPs to ignore, e.g. ["10.0.0.1"]
+users = []   # usernames to ignore, e.g. ["backup-svc"]
+
+# Output / exit-code behavior.
+[output]
+fail_severity = "HIGH"   # CLI exits 1 if any alert is >= this severity
+                         # (INFO|LOW|MEDIUM|HIGH|CRITICAL). Else exit 0.
+
+# Ingestion settings shared by the parsers.
+[ingest]
+log_timezone = "UTC"   # REQUIRED — IANA tz for year-less syslog & naive CSV timestamps
+# log_year = 2026      # REQUIRED for year-less syslog timestamps (traditional
+                       # "MMM DD HH:MM:SS" with no year). Parsing such a line
+                       # without it raises a clear error. Not needed for ISO8601
+                       # logs (they carry their own year) or CSV input.
+
+# CSV ingestion: map logical fields to your CSV's column headers.
+[ingest.csv]
+timestamp_format = "%Y-%m-%dT%H:%M:%S%z"  # strptime pattern; tz applied if naive
+
+# Logical field -> CSV column header. Required logical fields:
+# timestamp, username, source_ip, outcome.
+[ingest.csv.columns]
+timestamp = "timestamp"
+username = "username"
+source_ip = "source_ip"
+source_port = "source_port"
+outcome = "outcome"
+auth_method = "auth_method"
+hostname = "hostname"
+
+# Translate CSV outcome cell values -> Outcome enum names
+# (SUCCESS, FAILURE, INVALID_USER). Unmapped values that already equal an
+# enum name pass through; anything else is a non-fatal row error.
+[ingest.csv.outcome_map]
+success = "SUCCESS"
+failure = "FAILURE"
+failed = "FAILURE"
+invalid_user = "INVALID_USER"
+
+# Translate CSV auth_method cell values -> AuthMethod enum names
+# (PASSWORD, PUBLICKEY, OTHER, UNKNOWN). Empty cells default to UNKNOWN.
+[ingest.csv.auth_method_map]
+password = "PASSWORD"
+publickey = "PUBLICKEY"
+"keyboard-interactive" = "OTHER"

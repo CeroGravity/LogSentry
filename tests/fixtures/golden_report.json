@@ -1,0 +1,54 @@
+{
+  "alerts": [
+    {
+      "alert_id": "74d01986391dbb34",
+      "dedup_key": "R1:198.51.100.23:2026-01-10T13:00:00+00:00:2026-01-10T13:00:25+00:00",
+      "description": "6 failed authentications from 198.51.100.23 targeting 2 user(s): admin, root",
+      "entities": {
+        "source_ip": "198.51.100.23",
+        "usernames": [
+          "admin",
+          "root"
+        ]
+      },
+      "evidence": [
+        "523198db5b21377b",
+        "2dfe526a081585fe",
+        "81fc335efc63a55a",
+        "e6781df35c55548b",
+        "7f4f1e18a7c24d44",
+        "65a2f9637aabe936"
+      ],
+      "rule_id": "R1",
+      "score": 72,
+      "severity": "HIGH",
+      "time_range": [
+        "2026-01-10T13:00:00+00:00",
+        "2026-01-10T13:00:25+00:00"
+      ],
+      "title": "Brute-force burst"
+    }
+  ],
+  "generated_at": "2026-01-10T20:00:00+00:00",
+  "inputs": [
+    {
+      "error_count": 0,
+      "event_count": 9,
+      "source_file": "tests/fixtures/burst.log"
+    }
+  ],
+  "parse_errors": [],
+  "schema_version": "1",
+  "summary": {
+    "by_severity": {
+      "CRITICAL": 0,
+      "HIGH": 1,
+      "INFO": 0,
+      "LOW": 0,
+      "MEDIUM": 0
+    },
+    "total_alerts": 1,
+    "total_events": 9
+  },
+  "tool_version": "0.0.0"
+}

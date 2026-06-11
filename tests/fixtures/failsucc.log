@@ -1,0 +1,8 @@
+2026-01-10T13:00:00+00:00 host1 sshd[3001]: Failed password for alice from 192.0.2.5 port 41001 ssh2
+2026-01-10T13:00:30+00:00 host1 sshd[3002]: Failed password for alice from 192.0.2.5 port 41002 ssh2
+2026-01-10T13:01:00+00:00 host1 sshd[3003]: Failed password for alice from 192.0.2.5 port 41003 ssh2
+2026-01-10T13:02:00+00:00 host1 sshd[3004]: Accepted password for alice from 192.0.2.5 port 41004 ssh2
+2026-01-10T13:00:00+00:00 host2 sshd[3101]: Failed password for carol from 192.0.2.9 port 42001 ssh2
+2026-01-10T13:00:30+00:00 host2 sshd[3102]: Failed password for carol from 192.0.2.9 port 42002 ssh2
+2026-01-10T13:01:00+00:00 host2 sshd[3103]: Failed password for carol from 192.0.2.9 port 42003 ssh2
+2026-01-10T13:10:00+00:00 host2 sshd[3104]: Accepted password for carol from 192.0.2.9 port 42004 ssh2

@@ -1,0 +1,16 @@
+# Config for Phase 2 fixture tests.
+[r1]
+window_seconds = 60
+min_failures = 5
+per_user = false
+
+[r2]
+window_seconds = 300
+min_preceding_failures = 3
+require_same_source_ip = true
+
+[output]
+fail_severity = "HIGH"
+
+[ingest]
+log_timezone = "UTC"

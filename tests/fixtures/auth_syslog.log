@@ -1,0 +1,11 @@
+Jan 10 13:55:36 host1 sshd[2310]: Accepted password for alice from 203.0.113.7 port 51514 ssh2
+Jan 10 13:55:40 host1 sshd[2311]: Failed password for bob from 198.51.100.23 port 40222 ssh2
+Jan 10 13:55:41 host1 sshd[2311]: Failed password for invalid user oracle from 198.51.100.23 port 40224 ssh2
+Jan 10 13:56:02 host1 sshd[2312]: Accepted publickey for carol from 2001:db8::1 port 50001 ssh2: RSA SHA256:abcd
+Jan 10 13:56:10 host1 sshd[2313]: Accepted keyboard-interactive/pam for dave from 192.0.2.10 port 33001 ssh2
+Jan 10 13:56:15 host1 sshd[2314]: pam_unix(sshd:auth): authentication failure; logname= uid=0 euid=0 tty=ssh ruser= rhost=198.51.100.23 user=bob
+Jan 10 13:56:20 host1 sshd[2315]: Invalid user oracle from 198.51.100.23 port 40224
+Jan 10 13:56:25 host1 sshd[2316]: Connection closed by 203.0.113.7 port 51514
+Jan 10 13:56:30 host1 sshd[2317]: Failed password for from 198.51.100.99 port
+this is not a syslog line at all
+Jan 10 13:56:40 host1 sshd[2318]: Failed publickey for erin from resolved.example.com port 22001 ssh2
