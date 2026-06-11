@@ -84,6 +84,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--baseline", nargs="+", default=None,
         help="Baseline file(s) for R5; overrides config baseline_source.",
     )
+    analyze.add_argument(
+        "--output", type=str, default=None,
+        help="Write the report to this file instead of stdout.",
+    )
     return parser
 
 
@@ -218,9 +222,15 @@ def _run_analyze(args: argparse.Namespace) -> int:
     alerts = run_detectors(events, ctx, detectors)
 
     if args.format == "json":
-        print(render_json(results, events, alerts, now))
+        # Trailing newline mirrors the historical stdout (print) behavior.
+        report = render_json(results, events, alerts, now) + "\n"
     else:
-        print(render_text(results, events, alerts, now, timeline=args.timeline), end="")
+        report = render_text(results, events, alerts, now, timeline=args.timeline)
+
+    if args.output is not None:
+        Path(args.output).write_text(report, encoding="utf-8")
+    else:
+        sys.stdout.write(report)
 
     return _exit_code(alerts, results, config)
 

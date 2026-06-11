@@ -38,9 +38,6 @@ class OffHoursDetector:
     name = "R4"
     rule_id = "R4"
 
-    def __init__(self, config: AnalysisContext | None = None) -> None:
-        pass
-
     def analyze(
         self, events: list[LoginEvent], ctx: AnalysisContext
     ) -> list[Alert]:

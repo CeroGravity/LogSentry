@@ -143,6 +143,18 @@ class Output:
 
 
 @dataclass(frozen=True)
+class Correlation:
+    """Optional cross-rule correlation (off by default).
+
+    When ``enabled``, entities appearing across ``min_rules`` distinct rule_ids
+    yield one synthetic ``R0`` alert. Default off → zero behavioral change.
+    """
+
+    enabled: bool = False
+    min_rules: int = 2
+
+
+@dataclass(frozen=True)
 class Geo:
     """Geo resolution settings.
 
@@ -169,6 +181,7 @@ class Config:
     ingest: Ingest = field(default_factory=lambda: Ingest(log_timezone="UTC"))
     output: Output = field(default_factory=Output)
     geo: Geo = field(default_factory=Geo)
+    correlation: Correlation = field(default_factory=Correlation)
 
 
 def _coerce_section(cls: type[Any], data: dict[str, Any]) -> Any:
@@ -239,6 +252,7 @@ def _config_from_dict(data: dict[str, Any]) -> Config:
         "allowlists": Allowlists,
         "output": Output,
         "geo": Geo,
+        "correlation": Correlation,
     }
     kwargs: dict[str, Any] = {}
     for name, cls in section_types.items():
@@ -286,6 +300,8 @@ def validate_config(config: Config) -> None:
         )
     _validate_geo(config.geo)
     _validate_baseline_source(config.r5.baseline_source)
+    if config.correlation.min_rules < 2:
+        raise ValueError("correlation.min_rules must be >= 2")
 
 
 def _validate_baseline_source(source: str | None) -> None:

@@ -42,9 +42,6 @@ class ImpossibleTravelDetector:
     name = "R3"
     rule_id = "R3"
 
-    def __init__(self, config: AnalysisContext | None = None) -> None:
-        pass
-
     def analyze(
         self, events: list[LoginEvent], ctx: AnalysisContext
     ) -> list[Alert]:

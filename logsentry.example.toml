@@ -49,6 +49,13 @@ users = []   # usernames to ignore, e.g. ["backup-svc"]
 fail_severity = "HIGH"   # CLI exits 1 if any alert is >= this severity
                          # (INFO|LOW|MEDIUM|HIGH|CRITICAL). Else exit 0.
 
+# Optional cross-rule correlation (OFF by default). When enabled, an entity
+# (user, else source IP) implicated across >= min_rules distinct rules yields a
+# synthetic "R0" Correlated-activity alert. Default off -> no behavior change.
+[correlation]
+enabled = false
+min_rules = 2
+
 # Geo resolution (used by R3 impossible_travel). No network: 'maxmind' reads a
 # LOCAL .mmdb file only; 'static' reads a local CSV.
 [geo]

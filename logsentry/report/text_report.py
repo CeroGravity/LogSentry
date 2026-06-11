@@ -28,6 +28,8 @@ def _primary_entity(alert: Alert) -> str:
         )
     if alert.rule_id in ("R4", "R5"):
         return str(obj.get("username", ""))
+    if alert.rule_id == "R0":
+        return str(obj.get("entity", ""))
     return ",".join(alert.entities)
 
 
@@ -72,12 +74,30 @@ def render_text(
         lines.append("Timeline:")
         if not events:
             lines.append("  (no events)")
-        for ev in events:
+        cited = _evidence_markers(alerts)
+        ordered = sorted(
+            events, key=lambda e: (e.timestamp, e.source_file, e.line_no)
+        )
+        for ev in ordered:
+            marker = cited.get(ev.event_id, "")
+            suffix = f"  {marker}" if marker else ""
             lines.append(
                 f"  {_iso(ev.timestamp)}  {ev.outcome.name:<12}  "
                 f"{ev.auth_method.name:<9}  "
                 f"{ev.username or '-'}@{ev.source_ip or '-'}  "
-                f"[{ev.source_file}:{ev.line_no}]"
+                f"[{ev.source_file}:{ev.line_no}]{suffix}"
             )
 
     return "\n".join(lines) + "\n"
+
+
+def _evidence_markers(alerts: Sequence[Alert]) -> dict[str, str]:
+    """Map each cited event_id to a deterministic ``*R1 *R3`` marker string."""
+    rules_by_event: dict[str, set[str]] = {}
+    for alert in alerts:
+        for event_id in alert.evidence:
+            rules_by_event.setdefault(event_id, set()).add(alert.rule_id)
+    return {
+        event_id: " ".join(f"*{rid}" for rid in sorted(rules))
+        for event_id, rules in rules_by_event.items()
+    }

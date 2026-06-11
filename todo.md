@@ -1,20 +1,19 @@
-# Phase 4 — R4 Off-Hours + R5 New-Source-IP (todo)
+# Phase 5 — Polish, Docs, Optional Correlation, Hardening (todo)
 
-- [x] Task 1 — models: OffHoursDetail, NewSourceIPDetail, AlertDetail union, Alert.details widened
-- [x] Task 2 — detectors/offhours.py (R4, MEDIUM)
-- [x] Task 3 — detectors/newsourceip.py (R5, LOW) + empty-baseline silence
-- [x] Task 4 — engine.derive_baseline (cutoff/percent) + CLI --baseline + file mode
-- [x] Task 5 — uniform allowlists (shared _common.is_allowlisted) across R1–R5
-- [x] Task 6 — scoring.score_r4 / score_r5
-- [x] Task 7 — json/text serialization; config baseline_source validation; example toml
-- [x] Task 8 — fixtures + tests (offhours, newsourceip, baseline, allowlist, snapshot)
+- [x] Task 1 — version 0.1.0 single-source; regenerate goldens; guarded diff (only tool_version)
+- [x] Task 2 — README.md (scope, install, quickstart, 5-rule table, config+CLI ref, exit codes, determinism)
+- [x] Task 3 — THREAT_MODEL.md (per-rule FP/FN, sandwich gap, path-sensitivity, per-run baseline, determinism, local-only)
+- [x] Task 4 — CHANGELOG.md [0.1.0] covering Phases 0–5 + FP-1.1
+- [x] Task 5 — examples/ sample + quickstart + test_quickstart.py
+- [x] Task 6 — timeline polish (evidence markers) + --output PATH; default unchanged
+- [x] Task 7 — optional correlation R0 (off by default) + golden_correlated.json
+- [x] Task 8 — hardening: no stray stubs; --help capture; ruff/mypy/pytest green
 
 ## Verification
 
-- [x] ruff / mypy --strict / pytest green (98 tests)
-- [x] import scan: geoip2/maxminddb only in geo.py; no network imports
-- [x] Phase 2 AND Phase 3 goldens byte-identical
+- [x] ruff / mypy --strict / pytest green (104 tests)
+- [x] guarded golden diff: only tool_version line changed
+- [x] correlation off → existing goldens byte-equal
+- [x] grep TODO/NotImplementedError clean
 
-## Out of scope (Phase 4)
-
-- No correlation. No schema bump (additive only). No network. No new deps.
+## Done — v0.1.0

@@ -1,0 +1,95 @@
+{
+  "alerts": [
+    {
+      "alert_id": "adb36be611ce06d6",
+      "dedup_key": "R0:mallory",
+      "description": "mallory implicated across 2 rules: R2, R4",
+      "entities": {
+        "entity": "mallory"
+      },
+      "evidence": [
+        "63c49ca406e165e4",
+        "ba8302e92f94cb36"
+      ],
+      "rule_id": "R0",
+      "score": 95,
+      "severity": "CRITICAL",
+      "time_range": [
+        "2026-01-10T18:00:00+00:00",
+        "2026-01-10T18:02:00+00:00"
+      ],
+      "title": "Correlated activity"
+    },
+    {
+      "alert_id": "63c49ca406e165e4",
+      "dedup_key": "R2:mallory:89.40.10.40:dfd47d81dcb40eae",
+      "description": "3 failed attempt(s) for mallory from 89.40.10.40 followed by a successful login",
+      "entities": {
+        "source_ip": "89.40.10.40",
+        "username": "mallory"
+      },
+      "evidence": [
+        "527632cfaba82933",
+        "a274cf83d5ef27f7",
+        "0693e0fd69cd185c",
+        "dfd47d81dcb40eae"
+      ],
+      "rule_id": "R2",
+      "score": 90,
+      "severity": "CRITICAL",
+      "time_range": [
+        "2026-01-10T18:00:00+00:00",
+        "2026-01-10T18:02:00+00:00"
+      ],
+      "title": "Failed-then-success"
+    },
+    {
+      "alert_id": "ba8302e92f94cb36",
+      "dedup_key": "R4:mallory:89.40.10.40:dfd47d81dcb40eae",
+      "description": "mallory logged in from 89.40.10.40 at 2026-01-10T13:02:00-05:00 (Saturday, non-business day)",
+      "details": {
+        "business_window": "Mon,Tue,Wed,Thu,Fri 08:00-18:00 America/New_York",
+        "local_time": "2026-01-10T13:02:00-05:00",
+        "non_business_day": true,
+        "weekday": "Saturday"
+      },
+      "entities": {
+        "source_ip": "89.40.10.40",
+        "username": "mallory"
+      },
+      "evidence": [
+        "dfd47d81dcb40eae"
+      ],
+      "rule_id": "R4",
+      "score": 60,
+      "severity": "MEDIUM",
+      "time_range": [
+        "2026-01-10T18:02:00+00:00",
+        "2026-01-10T18:02:00+00:00"
+      ],
+      "title": "Off-hours access"
+    }
+  ],
+  "generated_at": "2026-01-10T20:00:00+00:00",
+  "inputs": [
+    {
+      "error_count": 0,
+      "event_count": 4,
+      "source_file": "tests/fixtures/correlated.log"
+    }
+  ],
+  "parse_errors": [],
+  "schema_version": "1",
+  "summary": {
+    "by_severity": {
+      "CRITICAL": 2,
+      "HIGH": 0,
+      "INFO": 0,
+      "LOW": 0,
+      "MEDIUM": 1
+    },
+    "total_alerts": 3,
+    "total_events": 4
+  },
+  "tool_version": "0.1.0"
+}

@@ -1,0 +1,2 @@
+2026-01-05T14:00:00+00:00 host1 sshd[100]: Accepted password for dave from 45.32.10.5 port 51000 ssh2
+2026-01-06T15:00:00+00:00 host1 sshd[101]: Accepted password for dave from 45.32.10.6 port 51001 ssh2

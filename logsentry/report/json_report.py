@@ -45,6 +45,8 @@ def entities_object(alert: Alert) -> dict[str, object]:
     if alert.rule_id in ("R4", "R5"):
         username, source_ip = alert.entities
         return {"username": username, "source_ip": source_ip}
+    if alert.rule_id == "R0":
+        return {"entity": alert.entities[0] if alert.entities else ""}
     return {"values": list(alert.entities)}
 
 

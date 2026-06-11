@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures"
 GOLDEN = FIXTURES / "golden_report.json"
 GOLDEN_TRAVEL = FIXTURES / "golden_travel.json"
+GOLDEN_CORRELATED = FIXTURES / "golden_correlated.json"
 
 _NOW = datetime(2026, 1, 10, 20, 0, 0, tzinfo=UTC)
 
@@ -84,3 +85,16 @@ def test_golden_travel_byte_equal() -> None:
     alerts = run_detectors(events, ctx, build_detectors(cfg))
     rendered = render_json([result], events, alerts, _NOW)
     assert rendered + "\n" == GOLDEN_TRAVEL.read_text(encoding="utf-8")
+
+
+def test_golden_correlated_byte_equal() -> None:
+    cfg = load_config(FIXTURES / "correlated.toml")
+    result = AuthLogParser(cfg).parse(Path("tests/fixtures/correlated.log"))
+    events, _ = build_stream([result])
+    ctx = AnalysisContext(
+        config=cfg, baseline_events=(), geo_resolver=NullResolver(),
+        now=_NOW, tz=ZoneInfo(cfg.ingest.log_timezone),
+    )
+    alerts = run_detectors(events, ctx, build_detectors(cfg))
+    rendered = render_json([result], events, alerts, _NOW)
+    assert rendered + "\n" == GOLDEN_CORRELATED.read_text(encoding="utf-8")

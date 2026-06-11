@@ -29,10 +29,6 @@ class BruteForceDetector:
     name = "R1"
     rule_id = "R1"
 
-    def __init__(self, config: AnalysisContext | None = None) -> None:
-        # Config is read from the context at analyze time; ctor kept simple.
-        pass
-
     def analyze(
         self, events: list[LoginEvent], ctx: AnalysisContext
     ) -> list[Alert]:

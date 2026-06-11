@@ -1,0 +1,35 @@
+# LogSentry sample configuration — wires static geo + baseline + R1–R5.
+[r1]
+window_seconds = 60
+min_failures = 5
+per_user = false
+
+[r2]
+window_seconds = 300
+min_preceding_failures = 3
+require_same_source_ip = true
+
+[r3]
+max_kmh = 900
+min_distance_km = 500
+consider_failures = false
+
+[r4]
+timezone = "America/New_York"
+business_days = [0, 1, 2, 3, 4]
+business_start = "08:00"
+business_end = "18:00"
+only_success = true
+
+[r5]
+only_success = true
+
+[output]
+fail_severity = "HIGH"
+
+[geo]
+resolver = "static"
+static_path = "examples/sample_geo.csv"
+
+[ingest]
+log_timezone = "UTC"
