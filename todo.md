@@ -1,19 +1,16 @@
-# Phase 5 — Polish, Docs, Optional Correlation, Hardening (todo)
+# Phase 6 — Enhancements v0.2.0 (todo)
 
-- [x] Task 1 — version 0.1.0 single-source; regenerate goldens; guarded diff (only tool_version)
-- [x] Task 2 — README.md (scope, install, quickstart, 5-rule table, config+CLI ref, exit codes, determinism)
-- [x] Task 3 — THREAT_MODEL.md (per-rule FP/FN, sandwich gap, path-sensitivity, per-run baseline, determinism, local-only)
-- [x] Task 4 — CHANGELOG.md [0.1.0] covering Phases 0–5 + FP-1.1
-- [x] Task 5 — examples/ sample + quickstart + test_quickstart.py
-- [x] Task 6 — timeline polish (evidence markers) + --output PATH; default unchanged
-- [x] Task 7 — optional correlation R0 (off by default) + golden_correlated.json
-- [x] Task 8 — hardening: no stray stubs; --help capture; ruff/mypy/pytest green
+- [x] Task A — severity-primary rank_key + cross-severity test
+- [x] Task B — R3 sandwich-gap fix (filter-to-resolved then pair); travel_sandwich fixture; travel.log = TERMINAL case (no golden change)
+- [x] Task C — R5 persistent baseline (opt-in, default OFF): persist/state_path; atomic sorted JSON; load+merge+writeback
+- [x] Task D — R4 per-(user,local_date) collapsing; OffHoursDetail += event_count,last_local_time
+- [x] Task E — version 0.2.0; 3 goldens regenerated; every diff explained; CHANGELOG + README + THREAT_MODEL
 
 ## Verification
 
-- [x] ruff / mypy --strict / pytest green (104 tests)
-- [x] guarded golden diff: only tool_version line changed
-- [x] correlation off → existing goldens byte-equal
+- [x] ruff / mypy --strict / pytest green (112 tests)
+- [x] every golden diff explained (report/travel: version-only; correlated: version + R4-collapse)
+- [x] persist OFF → prior behavior byte-identical (goldens hold)
 - [x] grep TODO/NotImplementedError clean
 
-## Done — v0.1.0
+## Done — v0.2.0

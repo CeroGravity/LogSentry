@@ -44,12 +44,23 @@ def _alert(rule_id: str, sev: Severity, score: float, start: datetime,
     )
 
 
-def test_rank_order_by_score_then_severity_then_time() -> None:
+def test_critical_outranks_high_regardless_of_score() -> None:
+    # Severity is primary: a CRITICAL/90 must rank above a boosted HIGH/100.
+    t0 = datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC)
+    high100 = _alert("R3", Severity.HIGH, 100, t0, "high100")
+    crit90 = _alert("R2", Severity.CRITICAL, 90, t0, "crit90")
+    ranked = rank_alerts((high100, crit90))
+    assert [x.dedup_key for x in ranked] == ["crit90", "high100"]
+
+
+def test_rank_severity_then_score_then_tiebreaks() -> None:
     t0 = datetime(2026, 1, 1, 0, 0, 0, tzinfo=UTC)
     t1 = datetime(2026, 1, 1, 1, 0, 0, tzinfo=UTC)
-    a = _alert("R1", Severity.HIGH, 72, t1, "a")     # lower score
-    b = _alert("R2", Severity.CRITICAL, 90, t1, "b")  # highest score
-    c = _alert("R1", Severity.HIGH, 72, t0, "c")     # same score as a, earlier
-    ranked = rank_alerts((a, b, c))
-    # b (90) first; then 72 ties broken by earlier start: c before a.
-    assert [x.dedup_key for x in ranked] == ["b", "c", "a"]
+    crit = _alert("R2", Severity.CRITICAL, 90, t1, "crit")  # severity-primary
+    a = _alert("R1", Severity.HIGH, 72, t1, "a")            # HIGH, later start
+    c = _alert("R1", Severity.HIGH, 72, t0, "c")            # HIGH, earlier start
+    hi_score = _alert("R3", Severity.HIGH, 80, t1, "hi")    # HIGH, higher score
+    ranked = rank_alerts((a, hi_score, crit, c))
+    # CRITICAL first; then within HIGH: higher score (hi=80) before 72s;
+    # the 72 tie resolves by earlier start: c before a.
+    assert [x.dedup_key for x in ranked] == ["crit", "hi", "c", "a"]

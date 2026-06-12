@@ -142,6 +142,20 @@ def test_non_positive_delta_treated_impossible() -> None:
     assert alerts[0].details.delta_seconds == 0
 
 
+def test_sandwich_gap_unresolved_interior_event_does_not_break_pair() -> None:
+    # NYC -> [private/unresolved IP] -> London inside an impossible window.
+    # The interior unresolved event must be dropped, re-pairing NYC<->London.
+    cfg = _cfg(max_kmh=900, min_distance_km=500)
+    events = [
+        _ev(1, "alice", "1.0.0.1", 0, Outcome.SUCCESS),        # NYC (resolved)
+        _ev(2, "alice", "10.0.0.99", 900, Outcome.SUCCESS),    # private (unresolved)
+        _ev(3, "alice", "1.0.0.2", 1800, Outcome.SUCCESS),     # London (resolved)
+    ]
+    alerts = ImpossibleTravelDetector().analyze(events, _ctx(cfg, _DictResolver()))
+    assert len(alerts) == 1
+    assert alerts[0].entities == ("alice", "1.0.0.1", "1.0.0.2")
+
+
 def test_fixture_travel_log_single_alert() -> None:
     from logsentry.config import load_config
     from logsentry.geo import CachingResolver
@@ -154,3 +168,17 @@ def test_fixture_travel_log_single_alert() -> None:
     alerts = det.analyze(list(result.events), _ctx(cfg, resolver))
     assert len(alerts) == 1
     assert alerts[0].entities == ("alice", "45.32.10.1", "51.15.20.2")
+
+
+def test_fixture_sandwich_log_one_alert() -> None:
+    from logsentry.config import load_config
+    from logsentry.geo import CachingResolver
+    from logsentry.parsers import AuthLogParser
+
+    cfg = load_config(FIXTURES / "travel.toml")
+    result = AuthLogParser(cfg).parse(Path("tests/fixtures/travel_sandwich.log"))
+    resolver = CachingResolver(StaticResolver(FIXTURES / "geo_static.csv"))
+    det = ImpossibleTravelDetector()
+    alerts = det.analyze(list(result.events), _ctx(cfg, resolver))
+    assert len(alerts) == 1
+    assert alerts[0].entities == ("carol", "45.32.10.1", "51.15.20.2")

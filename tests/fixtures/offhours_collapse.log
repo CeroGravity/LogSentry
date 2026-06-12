@@ -1,0 +1,4 @@
+2026-01-10T18:00:00-05:00 host1 sshd[7001]: Accepted password for frank from 45.32.10.1 port 70001 ssh2
+2026-01-10T19:30:00-05:00 host1 sshd[7002]: Accepted password for frank from 45.32.10.1 port 70002 ssh2
+2026-01-10T21:00:00-05:00 host1 sshd[7003]: Accepted password for frank from 45.32.10.1 port 70003 ssh2
+2026-01-12T22:00:00-05:00 host1 sshd[7004]: Accepted password for frank from 45.32.10.1 port 70004 ssh2

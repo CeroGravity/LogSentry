@@ -88,6 +88,8 @@ def _details_obj(detail: AlertDetail) -> dict[str, object]:
             "weekday": detail.weekday,
             "business_window": detail.business_window,
             "non_business_day": detail.non_business_day,
+            "event_count": int(detail.event_count),
+            "last_local_time": detail.last_local_time,
         }
     assert isinstance(detail, NewSourceIPDetail)
     return {

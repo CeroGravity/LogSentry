@@ -33,4 +33,4 @@ def test_sample_emits_all_five_rules(capsys, tmp_path) -> None:  # type: ignore[
     assert rule_ids == ["R1", "R2", "R3", "R4", "R5"]
     # generated_at honors the injected clock (determinism).
     assert report["generated_at"] == "2026-01-10T20:00:00+00:00"
-    assert report["tool_version"] == "0.1.0"
+    assert report["tool_version"] == "0.2.0"

@@ -70,10 +70,17 @@ class R4OffHours:
 
 @dataclass(frozen=True)
 class R5NewSourceIP:
-    """R5 new_source_ip_per_user settings."""
+    """R5 new_source_ip_per_user settings.
+
+    ``persist`` (opt-in, default off) loads/merges per-user known-IP sets from
+    ``state_path`` (a JSON file) before analysis and writes the updated sets
+    back afterwards. Off by default -> no read, no write, pure behavior.
+    """
 
     baseline_source: str | None = None
     only_success: bool = True
+    persist: bool = False
+    state_path: str | None = None
 
 
 @dataclass(frozen=True)
@@ -300,6 +307,8 @@ def validate_config(config: Config) -> None:
         )
     _validate_geo(config.geo)
     _validate_baseline_source(config.r5.baseline_source)
+    if config.r5.persist and not config.r5.state_path:
+        raise ValueError("r5.state_path is required when r5.persist = true")
     if config.correlation.min_rules < 2:
         raise ValueError("correlation.min_rules must be >= 2")
 

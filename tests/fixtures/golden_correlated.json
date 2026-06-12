@@ -8,8 +8,8 @@
         "entity": "mallory"
       },
       "evidence": [
-        "63c49ca406e165e4",
-        "ba8302e92f94cb36"
+        "6138ea2b1655c23c",
+        "63c49ca406e165e4"
       ],
       "rule_id": "R0",
       "score": 95,
@@ -44,11 +44,13 @@
       "title": "Failed-then-success"
     },
     {
-      "alert_id": "ba8302e92f94cb36",
-      "dedup_key": "R4:mallory:89.40.10.40:dfd47d81dcb40eae",
+      "alert_id": "6138ea2b1655c23c",
+      "dedup_key": "R4:mallory:2026-01-10",
       "description": "mallory logged in from 89.40.10.40 at 2026-01-10T13:02:00-05:00 (Saturday, non-business day)",
       "details": {
         "business_window": "Mon,Tue,Wed,Thu,Fri 08:00-18:00 America/New_York",
+        "event_count": 1,
+        "last_local_time": "2026-01-10T13:02:00-05:00",
         "local_time": "2026-01-10T13:02:00-05:00",
         "non_business_day": true,
         "weekday": "Saturday"
@@ -91,5 +93,5 @@
     "total_alerts": 3,
     "total_events": 4
   },
-  "tool_version": "0.1.0"
+  "tool_version": "0.2.0"
 }

@@ -46,7 +46,7 @@ for the expected alert set.
 | R1 brute_force_burst | Rapid repeated failed auths from a source | `window_seconds`, `min_failures`, `per_user` | HIGH |
 | R2 failed_then_success | Failures then a success for the same entity in a window | `window_seconds`, `min_preceding_failures`, `require_same_source_ip` | CRITICAL |
 | R3 impossible_travel | Same user in two locations too far apart too fast | `max_kmh`, `min_distance_km`, `consider_failures` | HIGH |
-| R4 off_hours_access | Successful login outside business hours | `timezone`, `business_days`, `business_start`, `business_end`, `only_success` | MEDIUM |
+| R4 off_hours_access | Successful logins outside business hours, collapsed per `(user, local date)` | `timezone`, `business_days`, `business_start`, `business_end`, `only_success` | MEDIUM |
 | R5 new_source_ip_per_user | First auth from an unseen IP per user vs baseline | `baseline_source`, `only_success` | LOW |
 
 Optional `R0 Correlated activity` (off by default) groups an entity implicated
@@ -83,6 +83,8 @@ All sections are optional and fall back to defaults unless noted. See
 | `[r4] only_success` | `true` | Only alert on successful logins |
 | `[r5] baseline_source` | unset | Path \| `cutoff_ts:<ISO>` \| `first_n_percent:<1..100>` |
 | `[r5] only_success` | `true` | Only consider successful logins |
+| `[r5] persist` | `false` | Opt-in: load/merge + write back known-IP state |
+| `[r5] state_path` | unset | JSON state file (required when `persist`) |
 | `[allowlists] ips` / `users` | `[]` | Entities suppressed across all rules |
 | `[output] fail_severity` | `"HIGH"` | Exit 1 if any alert ≥ this severity |
 | `[geo] resolver` | `"null"` | `null` \| `static` \| `maxmind` |
@@ -126,6 +128,10 @@ never the implicit system tz. All ordering uses stable sorts with explicit
 tiebreakers; scoring is integer math; alert/event IDs use a fixed hash. JSON is
 emitted with `sort_keys=True`, so identical inputs produce byte-identical
 reports.
+
+Alerts are ranked **by severity first** (CRITICAL → INFO), so a CRITICAL never
+ranks below a HIGH; **score breaks ties within a severity** (higher first),
+then earliest start time, then `rule_id`, then `dedup_key`.
 
 ## Limitations
 

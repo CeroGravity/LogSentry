@@ -4,6 +4,40 @@ All notable changes to LogSentry are documented here. The format is based on
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-06-12
+
+Four bounded enhancements; all additive (no schema break), determinism
+preserved.
+
+### Changed
+
+- **Severity-primary ranking:** alerts now rank by severity first (a CRITICAL
+  never below a HIGH), with score breaking ties within a severity, then start
+  time, `rule_id`, `dedup_key`. Re-orders multi-alert output (e.g. R2 CRITICAL
+  now above R3 HIGH).
+- **R3 sandwich gap closed:** R3 filters per user to events with a real resolved
+  location, then pairs consecutive resolved events. An unresolved/private event
+  between two resolved ones no longer breaks the pair (residual tradeoff noted in
+  THREAT_MODEL).
+- **R4 off-hours collapsing:** off-hours events sharing `(username, local date)`
+  collapse into one alert with aggregated evidence; `dedup_key` is
+  `R4:user:local_date`. Single-event days are textually unchanged.
+
+### Added
+
+- **Opt-in persistent R5 baseline** (`[r5] persist`, `state_path`; default OFF):
+  loads/merges per-user known-IP sets from a JSON state file and writes the
+  updated sets back atomically (`sort_keys=True`). Off → no read, no write.
+- `OffHoursDetail` gains additive `event_count` and `last_local_time` fields.
+- Fixtures `travel_sandwich.log`, `offhours_collapse.log`; tests for the
+  sandwich fix, R4 collapsing, and R5 persistence.
+
+### Fixed
+
+- Goldens regenerated for v0.2.0; every diff explained (version-only for
+  `golden_report`/`golden_travel`; version + the intended R4-collapse change for
+  `golden_correlated`).
+
 ## [0.1.0] - 2026-06-11
 
 First release: a complete, documented, deterministic blue-team auth-log

@@ -38,6 +38,12 @@ only_success = true            # only alert on successful logins
 # A user whose baseline known-set is empty is never alerted.
 # baseline_source = "baseline.log"
 only_success = true                 # only consider successful logins
+# Optional persistent baseline state (OFF by default). When persist=true and
+# state_path is set, per-user known-IP sets are loaded from the JSON state file
+# before analysis and the updated sets are written back atomically afterwards,
+# so learned IPs carry across runs. Off -> no read, no write (pure behavior).
+persist = false
+# state_path = "r5_state.json"
 
 # Entities excluded from all alerting.
 [allowlists]

@@ -66,15 +66,16 @@ def score_r5() -> int:
     return 30
 
 
-def rank_key(alert: Alert) -> tuple[float, int, str, str, str]:
-    """Ascending sort key: ``(-score, -severity_int, start, rule_id, dedup_key)``.
+def rank_key(alert: Alert) -> tuple[int, float, str, str, str]:
+    """Ascending sort key: ``(-severity_int, -score, start, rule_id, dedup_key)``.
 
-    Higher score and higher severity sort first (via negation); ties broken by
+    Severity is primary (descending) so a CRITICAL never ranks below a HIGH;
+    score breaks ties within a severity (descending); remaining ties resolve by
     earliest start time, then rule_id, then dedup_key — fully deterministic.
     """
     return (
-        -alert.score,
         -alert.severity.value,
+        -alert.score,
         alert.time_range[0].isoformat(),
         alert.rule_id,
         alert.dedup_key,

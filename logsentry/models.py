@@ -108,12 +108,20 @@ class GeoDetail:
 
 @dataclass(frozen=True)
 class OffHoursDetail:
-    """Structured detail for an off-hours-access (R4) alert."""
+    """Structured detail for an off-hours-access (R4) alert.
 
-    local_time: str        # ISO local time in the configured timezone
+    R4 collapses all off-hours events sharing ``(username, local_date)`` into
+    one alert. ``local_time`` is the first such event's local time;
+    ``last_local_time`` the last; ``event_count`` the number collapsed (1 for a
+    single-event day, where ``last_local_time == local_time``).
+    """
+
+    local_time: str        # ISO local time of the first event that day
     weekday: str           # e.g. "Saturday"
     business_window: str   # e.g. "Mon-Fri 08:00-18:00 America/New_York"
     non_business_day: bool
+    event_count: int = 1
+    last_local_time: str = ""
 
 
 @dataclass(frozen=True)

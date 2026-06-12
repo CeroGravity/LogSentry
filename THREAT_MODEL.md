@@ -42,17 +42,24 @@ authentication, no active probing, and has no offensive capability.
   different IP when `require_same_source_ip=true`, are not correlated.
 
 ### R3 impossible_travel (HIGH)
-- **Logic:** per user, **consecutive** geo-resolved events are compared; if
-  implied speed `> max_kmh` and distance `≥ min_distance_km`, alert.
+- **Logic:** per user, events are **first filtered to those with a real resolved
+  location** (public, coordinates returned); consecutive *resolved* events are
+  then compared; if implied speed `> max_kmh` and distance `≥ min_distance_km`,
+  alert.
 - **FP risk:** VPNs, corporate proxies, NAT/CGNAT, and mobile carrier egress can
   place a user in a far-off city, producing impossible-travel false positives.
-- **FN / evasion — consecutive-pair "sandwich gap" (required note):** R3 only
-  compares **adjacent** events in time order. An attacker can insert a login
-  from an **unresolved or private IP** between two resolved logins; the
-  unresolved middle event breaks the resolved pair into two skipped pairs, and
-  the real far-apart hop is never compared. A future hardening (FP-3.1) would
-  compare against the last *resolved* endpoint rather than the immediate
-  predecessor.
+- **Sandwich gap — CLOSED (v0.2.0):** the prior consecutive-pair logic could be
+  evaded by inserting an unresolved/private login between two resolved ones,
+  which split the pair and hid the hop. R3 now drops unresolved/private events
+  from the sequence and pairs the surviving resolved events, so an interior
+  unresolved event no longer breaks the comparison.
+- **Residual tradeoff:** filtering to resolved endpoints means a genuinely
+  *intermediate* real location (a legitimate stop whose IP happens to resolve to
+  a third city) is also skipped over — comparing the outer two resolved
+  endpoints can now produce a false positive where the true path was feasible
+  via the unshown intermediate hop.
+- **FN / evasion:** low-and-slow movement under `max_kmh`, or activity from only
+  unresolved IPs, still evades R3.
 
 ### R4 off_hours_access (MEDIUM)
 - **Logic:** successful logins converted to `r4.timezone`; alert if on a
@@ -67,11 +74,17 @@ authentication, no active probing, and has no offensive capability.
   login from an unseen IP raises one alert, then that IP becomes known.
 - **FP risk:** roaming users, new devices, and dynamic IPs trip R5. It is LOW
   severity for this reason.
-- **FN / evasion — per-run baseline (required note):** the known-set is built
-  **only** from `baseline_events` at the start of each run; there is **no
+- **FN / evasion — baseline scope (required note):** by default the known-set is
+  built **only** from `baseline_events` at the start of each run, with **no
   persistent state across runs**. A user with an **empty** baseline is learned
   silently and never alerts (first-run flooding guard), so genuinely new
   infrastructure for such a user is not flagged until a baseline exists.
+- **Opt-in persistence (v0.2.0, default OFF):** with `r5.persist=true` and
+  `r5.state_path`, per-user known-IP sets are loaded/merged before analysis and
+  written back afterwards, so learned IPs carry across runs. The **state file
+  holds usernames and IP addresses** (no secrets) — protect it like the logs it
+  derives from. It is read/written locally only; no network. Off by default →
+  no read, no write.
 
 ### R0 Correlated activity (optional, off by default)
 - **Logic:** when enabled, an entity (username, else source IP) implicated
@@ -97,6 +110,8 @@ fixed relative path).
   implicit system timezone. Year-less syslog requires `ingest.log_year`.
 - All ordering uses stable sorts with explicit tiebreakers; no set iteration
   reaches output. Scoring is integer math. IDs use a fixed SHA-1 truncation.
+- Alerts rank by **severity first** (a CRITICAL never below a HIGH); **score
+  breaks ties within a severity**, then start time, `rule_id`, `dedup_key`.
 - JSON uses `sort_keys=True` → byte-identical reports for identical inputs.
 
 ## Data handling
@@ -106,3 +121,6 @@ fixed relative path).
 - No network egress of any kind.
 - No secrets are required or logged; raw log lines are preserved as evidence
   only within the report the operator already controls.
+- The optional R5 state file (`r5.state_path`) holds usernames + known IPs and
+  is read/written atomically on the local filesystem only; protect it like the
+  logs. It is absent unless `r5.persist` is enabled.

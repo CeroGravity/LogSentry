@@ -91,3 +91,27 @@ class NewSourceIPDetector:
             dedup_key=dedup_key,
             details=detail,
         )
+
+
+def _considered(ev: LoginEvent, only_success: bool) -> bool:
+    if ev.username is None or ev.source_ip is None:
+        return False
+    return ev.outcome is Outcome.SUCCESS or not only_success
+
+
+def compute_known_sets(
+    baseline_events: tuple[LoginEvent, ...],
+    analyzed_events: tuple[LoginEvent, ...],
+    only_success: bool,
+) -> dict[str, set[str]]:
+    """Per-user known-IP set after a run: baseline ∪ all considered analyzed IPs.
+
+    Used by the CLI to write the persisted R5 state back. Mirrors the detector's
+    seeding so the next run's known-set matches what this run learned.
+    """
+    known: dict[str, set[str]] = {}
+    for ev in (*baseline_events, *analyzed_events):
+        if not _considered(ev, only_success):
+            continue
+        known.setdefault(ev.username or "", set()).add(ev.source_ip or "")
+    return known

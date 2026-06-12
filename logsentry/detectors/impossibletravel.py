@@ -1,9 +1,11 @@
 """R3 impossible_travel — same user, two locations too far apart too fast.
 
-For each user, consecutive geo-resolved events are checked: if the implied
-speed exceeds ``max_kmh`` and the hop is at least ``min_distance_km``, one HIGH
-alert is emitted per qualifying pair. Pairs with a private/unresolved endpoint
-are silently skipped. Pure: no I/O (resolver may read a local DB), no wall-clock.
+For each user, events are first filtered to those with a real resolved location
+(public, resolver returned coordinates); unresolved/private events are dropped
+from the sequence rather than breaking a pair. Consecutive *resolved* events are
+then compared: if the implied speed exceeds ``max_kmh`` and the hop is at least
+``min_distance_km``, one HIGH alert is emitted per qualifying pair. Pure: no I/O
+(resolver may read a local DB), no wall-clock.
 """
 
 from __future__ import annotations
@@ -62,9 +64,21 @@ class ImpossibleTravelDetector:
         alerts: list[Alert] = []
         for username in sorted(groups):
             ordered = sorted(groups[username], key=_sort_key)
-            for prev, curr in zip(ordered, ordered[1:], strict=False):
+            # Sandwich-gap fix: filter to events with a real resolved location
+            # FIRST, then pair consecutive resolved events. An unresolved or
+            # private event between two resolved ones no longer breaks the pair.
+            resolved: list[tuple[LoginEvent, GeoLocation]] = []
+            for ev in ordered:
+                loc = resolver.resolve(ev.source_ip or "")
+                if self._resolved(loc):
+                    assert loc is not None
+                    resolved.append((ev, loc))
+            for (prev, loc_from), (curr, loc_to) in zip(
+                resolved, resolved[1:], strict=False
+            ):
                 alert = self._evaluate(
-                    username, prev, curr, resolver, cfg.max_kmh, cfg.min_distance_km
+                    username, prev, curr, loc_from, loc_to,
+                    cfg.max_kmh, cfg.min_distance_km,
                 )
                 if alert is not None:
                     alerts.append(alert)
@@ -75,19 +89,13 @@ class ImpossibleTravelDetector:
         username: str,
         prev: LoginEvent,
         curr: LoginEvent,
-        resolver: object,
+        loc_from: GeoLocation,
+        loc_to: GeoLocation,
         max_kmh: int,
         min_distance_km: int,
     ) -> Alert | None:
         ip_from = prev.source_ip or ""
         ip_to = curr.source_ip or ""
-        loc_from = resolver.resolve(ip_from)  # type: ignore[attr-defined]
-        loc_to = resolver.resolve(ip_to)  # type: ignore[attr-defined]
-        # Both endpoints must be publicly geo-resolved.
-        if not self._resolved(loc_from) or not self._resolved(loc_to):
-            return None
-
-        assert loc_from is not None and loc_to is not None
         assert loc_from.lat is not None and loc_from.lon is not None
         assert loc_to.lat is not None and loc_to.lon is not None
 

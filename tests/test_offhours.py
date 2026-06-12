@@ -95,5 +95,40 @@ def test_fixture_offhours_log() -> None:
     result = AuthLogParser(cfg).parse(Path("tests/fixtures/offhours.log"))
     alerts = OffHoursDetector().analyze(list(result.events), _ctx(cfg))
     # bob (evening, 50) + carol (weekend, 60); alice in-hours, dave failed.
+    # Different users/dates -> still 2 single-event alerts, unchanged.
     scores = sorted(a.score for a in alerts)
     assert scores == [50, 60]
+    assert all(a.details.event_count == 1 for a in alerts)  # type: ignore[union-attr]
+
+
+def test_collapse_same_user_same_date_one_alert() -> None:
+    from logsentry.config import load_config
+    from logsentry.parsers import AuthLogParser
+
+    cfg = load_config(FIXTURES / "offhours.toml")
+    result = AuthLogParser(cfg).parse(Path("tests/fixtures/offhours_collapse.log"))
+    alerts = OffHoursDetector().analyze(list(result.events), _ctx(cfg))
+    # frank: 3 off-hours logins on 2026-01-10 collapse to one; 2026-01-12 separate.
+    assert len(alerts) == 2
+    by_date = {a.dedup_key: a for a in alerts}
+    sat = by_date["R4:frank:2026-01-10"]
+    assert sat.details.event_count == 3  # type: ignore[union-attr]
+    assert len(sat.evidence) == 3
+    assert sat.score == 60  # Saturday, non-business day
+    assert "(3 logins)" in sat.description
+    assert sat.details.last_local_time != sat.details.local_time  # type: ignore[union-attr]
+    mon = by_date["R4:frank:2026-01-12"]
+    assert mon.details.event_count == 1  # type: ignore[union-attr]
+    assert mon.score == 50  # Monday evening
+    assert "logins)" not in mon.description  # single-event wording unchanged
+
+
+def test_collapsed_time_range_spans_first_to_last() -> None:
+    cfg = _cfg()
+    # Two off-hours events same user/date (Saturday).
+    e1 = _ev(datetime(2026, 1, 10, 17, 0, tzinfo=UTC), "grace")
+    e2 = _ev(datetime(2026, 1, 10, 23, 0, tzinfo=UTC), "grace")
+    alerts = OffHoursDetector().analyze([e1, e2], _ctx(cfg))
+    assert len(alerts) == 1
+    assert alerts[0].time_range == (e1.timestamp, e2.timestamp)
+    assert alerts[0].evidence == (e1.event_id, e2.event_id)

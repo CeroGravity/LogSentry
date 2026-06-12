@@ -16,8 +16,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from . import __version__
+from . import __version__, ids
 from .config import Config, Geo, load_config, validate_config
+from .detectors.newsourceip import compute_known_sets
 from .engine import (
     build_detectors,
     build_stream,
@@ -30,11 +31,12 @@ from .geo import (
     NullResolver,
     StaticResolver,
 )
-from .models import Alert, LoginEvent, Severity
+from .models import Alert, AuthMethod, LoginEvent, Outcome, Severity
 from .parsers import AuthLogParser, CsvParser
 from .parsers.base import ParseResult
 from .protocols import AnalysisContext, GeoResolver
 from .report import render_json, render_text
+from .state import load_state, save_state
 
 _CSV_SUFFIXES = {".csv", ".tsv"}
 
@@ -188,6 +190,39 @@ def _build_baseline(
     return derive_baseline(events, source)
 
 
+def _state_events(
+    state: dict[str, set[str]], now: datetime
+) -> tuple[LoginEvent, ...]:
+    """Synthesize baseline-seed events from persisted R5 known-IP state.
+
+    These carry the per-user known IPs as already-seen successes so the detector
+    treats them as known (and the user as non-empty-baseline). Built in sorted
+    order for determinism; ``raw`` marks them as synthetic state seeds.
+    """
+    events: list[LoginEvent] = []
+    line_no = 0
+    for user in sorted(state):
+        for ip in sorted(state[user]):
+            line_no += 1
+            raw = f"r5-state-seed {user} {ip}"
+            events.append(
+                LoginEvent(
+                    event_id=ids.event_id("<r5-state>", line_no, raw),
+                    timestamp=now,
+                    username=user,
+                    source_ip=ip,
+                    source_port=None,
+                    outcome=Outcome.SUCCESS,
+                    auth_method=AuthMethod.UNKNOWN,
+                    hostname=None,
+                    raw=raw,
+                    source_file="<r5-state>",
+                    line_no=line_no,
+                )
+            )
+    return tuple(events)
+
+
 def _run_analyze(args: argparse.Namespace) -> int:
     now = _parse_now(args.now)
     if args.config is not None:
@@ -211,6 +246,10 @@ def _run_analyze(args: argparse.Namespace) -> int:
 
     events, _errors = build_stream(results)
     baseline_events = _build_baseline(args, config, events)
+    # Opt-in R5 persistence: merge prior known-IP state into the baseline seed.
+    if config.r5.persist and config.r5.state_path is not None:
+        prior = load_state(config.r5.state_path)
+        baseline_events = _state_events(prior, now) + baseline_events
     ctx = AnalysisContext(
         config=config,
         baseline_events=baseline_events,
@@ -220,6 +259,11 @@ def _run_analyze(args: argparse.Namespace) -> int:
     )
     detectors = build_detectors(config)
     alerts = run_detectors(events, ctx, detectors)
+
+    # Write the updated R5 known-sets back (atomic, deterministic).
+    if config.r5.persist and config.r5.state_path is not None:
+        updated = compute_known_sets(baseline_events, events, config.r5.only_success)
+        save_state(config.r5.state_path, updated)
 
     if args.format == "json":
         # Trailing newline mirrors the historical stdout (print) behavior.
