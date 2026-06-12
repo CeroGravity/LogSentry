@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: py${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install (dev + geo extra)
+        run: python -m pip install --upgrade pip && pip install -e ".[dev,geo]"
+      - name: Lint (ruff)
+        run: ruff check .
+      - name: Type-check (mypy --strict)
+        run: mypy --strict logsentry
+      - name: Test (pytest)
+        run: pytest -q
+
+  no-geo:
+    name: no-geo (optional-dep independence)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install WITHOUT the geo extra
+        run: python -m pip install --upgrade pip && pip install -e ".[dev]"
+      - name: Confirm geoip2 is absent
+        run: python -c "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('geoip2') is None else 'geoip2 unexpectedly installed')"
+      - name: Test without geoip2 (lazy-import contract)
+        run: pytest -q

@@ -1,16 +1,16 @@
-# Phase 6 — Enhancements v0.2.0 (todo)
+# Phase 7 — CI + Repo Polish (todo)
 
-- [x] Task A — severity-primary rank_key + cross-severity test
-- [x] Task B — R3 sandwich-gap fix (filter-to-resolved then pair); travel_sandwich fixture; travel.log = TERMINAL case (no golden change)
-- [x] Task C — R5 persistent baseline (opt-in, default OFF): persist/state_path; atomic sorted JSON; load+merge+writeback
-- [x] Task D — R4 per-(user,local_date) collapsing; OffHoursDetail += event_count,last_local_time
-- [x] Task E — version 0.2.0; 3 goldens regenerated; every diff explained; CHANGELOG + README + THREAT_MODEL
+- [x] Task 1 — .github/workflows/ci.yml: push+PR; 3.11–3.14 matrix (ruff+mypy+pytest); no-geo job
+- [x] Task 2 — 3.11 floor PROVEN in-sandbox via uv (real Python 3.11.15, 112 tests pass)
+- [x] Task 3 — LICENSE (MIT) + pyproject metadata (license, readme, geo/dev extras, classifiers)
+- [x] Task 4 — Makefile (lint/type/test/check) — make check green
+- [x] Task 5 — README badges (CI, license, Python) — no other change
+- [x] Task 6 — ci.yml YAML validated (pyyaml; actionlint unavailable in sandbox)
 
 ## Verification
 
-- [x] ruff / mypy --strict / pytest green (112 tests)
-- [x] every golden diff explained (report/travel: version-only; correlated: version + R4-collapse)
-- [x] persist OFF → prior behavior byte-identical (goldens hold)
-- [x] grep TODO/NotImplementedError clean
+- [x] ruff / mypy --strict / pytest green; make check green
+- [x] NO source/detector change; goldens byte-identical to HEAD
+- [x] geoip2 optional (absent in dev venv, suite still green); only in geo.py; no runtime network
 
-## Done — v0.2.0
+## Done — repo review-ready at v0.2.0 with CI
