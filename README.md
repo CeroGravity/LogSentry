@@ -1,10 +1,10 @@
 # LogSentry
 
-[![CI](https://github.com/<owner>/logsentry/actions/workflows/ci.yml/badge.svg)](https://github.com/<owner>/logsentry/actions/workflows/ci.yml)
+[![CI](https://github.com/CeroGravity/logsentry/actions/workflows/ci.yml/badge.svg)](https://github.com/CeroGravity/logsentry/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.11–3.14](https://img.shields.io/badge/python-3.11%E2%80%933.14-blue.svg)](https://www.python.org/)
 
-<!-- Set <owner> to your GitHub org/user (e.g. you/logsentry) for the CI badge. -->
+<!-- Set CeroGravity to your GitHub org/user (e.g. you/logsentry) for the CI badge. -->
 
 Defensive auth-log anomaly detector. **Blue-team only — analysis only, no
 offensive capability.** It ingests Linux `auth.log` / sshd lines or a CSV of
